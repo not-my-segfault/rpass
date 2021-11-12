@@ -50,16 +50,20 @@ fn main() {
     println!("App Name: ");
     let app: String = read!();
 
-    let app_ciphered = cipher
+    let app_ciphered: String = app
         .chars()
-        .zip(app.chars())
-        .map(|(c, a)| {
-            let c = c as u8;
-            let a = a as u8;
-            let c = c ^ a;
-            c as char
+        .map(|x| {
+            let mut y = x;
+            if x.is_alphabetic() {
+                if x.is_uppercase() {
+                    y = cipher.chars().nth(x as usize - 65).unwrap();
+                } else {
+                    y = cipher.chars().nth(x as usize - 97).unwrap();
+                }
+            }
+            y
         })
-        .collect::<String>();
+        .collect();
 
     let pass = format!("{}{}{}", prefix, secret, app_ciphered);
 
