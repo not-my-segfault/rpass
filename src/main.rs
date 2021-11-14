@@ -3,12 +3,12 @@ mod util;
 
 use ansi_term::Colour::White;
 use random_string::generate;
-use std::{env, io, io::Write, os::unix::fs::PermissionsExt, process::exit};
+use std::{env, io, io::Write, process::exit};
 use util::{help, tut};
 
 fn main() {
+    let dir = format!("{}/{}", dirs::home_dir().unwrap().to_str().unwrap(), ".rpass");
     let args: Vec<String> = env::args().collect();
-    let dir = format!("{}/.local/passman", env::var("HOME").unwrap());
     if args.len() <= 1 {
         let arg: String = "".to_string();
         passgen(arg);
@@ -32,7 +32,8 @@ fn main() {
 fn passgen(arg: String) {
     const CHARSET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}\\|;:'\",<.>/?`~";
 
-    let dir = format!("{}/.local/passman", env::var("HOME").unwrap());
+    // this variable is set to the home directory of the user on windows
+    let dir = format!("{}/{}", dirs::home_dir().unwrap().to_str().unwrap(), ".rpass");
     let prefix_path = format!("{}/{}", dir, "prefix");
     let cipher_path = format!("{}/{}", dir, "cipher");
 
@@ -48,7 +49,8 @@ fn passgen(arg: String) {
         let prefix: String = generate(7, &CHARSET);
         std::fs::write(&prefix_path, prefix).unwrap();
         // making sure only the owner can only read the file
-        std::fs::set_permissions(&prefix_path, std::fs::Permissions::from_mode(0o400)).unwrap();
+        let mut permissions = std::fs::metadata(&prefix_path).unwrap().permissions();
+        permissions.set_readonly(true);
     };
 
     // cipher generation (if not present)
@@ -57,7 +59,8 @@ fn passgen(arg: String) {
         let cipher: String = generate(512, &CHARSET);
         std::fs::write(&cipher_path, cipher).unwrap();
         // making sure only the owner can only read the file
-        std::fs::set_permissions(&cipher_path, std::fs::Permissions::from_mode(0o400)).unwrap();
+        let mut permissions = std::fs::metadata(&cipher_path).unwrap().permissions();
+        permissions.set_readonly(true);
     };
 
     // read the values from the files

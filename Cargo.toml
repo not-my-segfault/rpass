@@ -1,5 +1,5 @@
 [package]
-name = "passman"
+name = "rpass"
 version = "1.0.0"
 edition = "2021"
 
@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 random-string = "*"
 ansi_term = "*"
+dirs = "*"
