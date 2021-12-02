@@ -1,11 +1,13 @@
 [package]
 name = "rpass"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-random-string = "*"
-ansi_term = "*"
-dirs = "*"
+random-string = "1.0.0"
+ansi_term = "0.12.1"
+dirs = "4.0.0"
+zip = { version = "0.5.13", default-features = false, features = ["deflate"] }
+zip-extensions = "0.6.1"

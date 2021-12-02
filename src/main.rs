@@ -3,7 +3,8 @@ mod util;
 
 use ansi_term::Colour::White;
 use random_string::generate;
-use std::{env, io, io::Write, process::exit};
+use zip_extensions::zip_create_from_directory;
+use std::{env, io, io::Write, process::exit, path::PathBuf};
 use util::{help, tut};
 
 fn main() {
@@ -22,6 +23,7 @@ fn main() {
     // removes the .rpass directory if the user passes the --clean flag
     } else if args[1] == "--clean" {
         let _ = std::fs::remove_dir_all(dir);
+        let _ = std::fs::remove_file(format!("{}/{}", dirs::home_dir().unwrap().to_str().unwrap(), ".rpass_backup.zip"));
     // displays the help output if the user passes the --help flag
     } else if args[1] == "--help" {
         help();
@@ -39,6 +41,7 @@ fn passgen(arg: String) {
     let schars = "!@#$%^&*()-_=+[]{}\\|;:'\",<.>/?`~";
 
     // adjust the .repeat(x) values to change the ration of normal characters to special characters
+    #[allow(clippy::repeat_once)]
     let charset = format!("{}{}", nchars.repeat(2), schars.repeat(1));
 
     // this variable is set to the home directory of the user on windows
@@ -73,14 +76,12 @@ fn passgen(arg: String) {
     };
 
     // back up the rpass directory
-    let backup_path = format!("{}/{}", dirs::home_dir().unwrap().to_str().unwrap(), ".rpass_backup.tar");
+    let backup_path: PathBuf = [dirs::home_dir().unwrap().to_str().unwrap(), ".rpass_backup.zip"].iter().collect();
+    let dir_as_pathbuf: PathBuf = [dirs::home_dir().unwrap().to_str().unwrap(), ".rpass"].iter().collect();
+
+     // backs up the rpass directory as a zip file home directory as ".rpass_backup.zip"
     if !std::path::Path::new(&backup_path).exists() {
-        let _ = std::process::Command::new("tar")
-            .arg("-cf")
-            .arg(&backup_path)
-            .arg(&dir)
-            .output()
-            .expect("Something went wrong creating rpass backup. Check home directory permissions.");
+        zip_create_from_directory(&backup_path, &dir_as_pathbuf).unwrap();
     };
 
     // read the values from the files
@@ -100,7 +101,7 @@ fn passgen(arg: String) {
         _ => arg,
     };
 
-    // mapp the app name against the cipher
+    // map the app name against the cipher
     let app_ciphered: String = app
         .trim()
         .chars()
